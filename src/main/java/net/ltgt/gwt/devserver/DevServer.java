@@ -12,6 +12,7 @@ import com.google.gwt.dev.util.arg.*;
 import com.google.gwt.dev.util.log.PrintWriterTreeLogger;
 import com.google.gwt.thirdparty.guava.common.base.Charsets;
 import com.google.gwt.thirdparty.guava.common.io.Resources;
+import com.google.gwt.util.regexfilter.WhitelistRegexFilter;
 import com.google.gwt.util.tools.ArgHandlerDir;
 import com.google.gwt.util.tools.ArgHandlerFlag;
 import com.google.gwt.util.tools.ArgHandlerString;
@@ -61,7 +62,7 @@ public class DevServer {
           options.logLevel = logLevel;
         }
       }));
-      registerHandler(new ArgHandlerGenerateJsInteropExports(new OptionGenerateJsInteropExports() {
+      final OptionGenerateJsInteropExports optionGenerateJsInteropExport = new OptionGenerateJsInteropExports() {
         @Override
         public boolean shouldGenerateJsInteropExports() {
           return options.generateExports;
@@ -71,7 +72,14 @@ public class DevServer {
         public void setGenerateJsInteropExports(boolean generateExports) {
           options.generateExports = generateExports;
         }
-      }));
+
+        @Override
+        public WhitelistRegexFilter getJsInteropExportFilter() {
+          return options.jsInteropExportFilter;
+        }
+      };
+      registerHandler(new ArgHandlerGenerateJsInteropExports(optionGenerateJsInteropExport));
+      registerHandler(new ArgHandlerFilterJsInteropExports(optionGenerateJsInteropExport));
       registerHandler(new ArgHandlerMethodNameDisplayMode(new OptionMethodNameDisplayMode() {
         @Override
         public Mode getMethodNameDisplayMode() {
@@ -349,6 +357,7 @@ public class DevServer {
     String contextPath;
     String modulePathPrefix;
     final List<String> moduleNames = new ArrayList<>();
+    final WhitelistRegexFilter jsInteropExportFilter = new WhitelistRegexFilter();
   }
 
   public static void main(String[] args) throws Exception {
